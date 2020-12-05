@@ -24,8 +24,9 @@ print(count)
 # Part B
 count = 0
 for passport in passports:
-    passport_pars = passport.split()
     valid = True
+    valid =  valid and sum([field in passport for field in required_fields]) == 7
+    passport_pars = passport.split()
     for part in passport_pars:
         key, value = tuple(part.split(':'))
         if key == 'byr':
