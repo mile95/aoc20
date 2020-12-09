@@ -1,56 +1,54 @@
 with open("input.txt") as f:
     entries = f.read().splitlines()
 
-acc = 0
-visited = []
-pointer = 0
-prev_pointer = 0
-
-# Part A
-while(True):
-    if pointer in visited:
-        break
-    visited.append(pointer)
-    ins, val = tuple(entries[pointer].split())
-    if ins == 'nop':
-        prev_pointer = pointer
-        pointer+=1
-    if ins == 'acc':
-        prev_pointer = pointer
-        acc+=int(val)
-        pointer+=1
-    if ins == 'jmp':
-        prev_pointer = pointer
-        pointer+=int(val)
+def run(instructions):
+    acc = 0
+    visited = set()
+    pointer = 0
+    prev_pointer = 0
+    while(True):
+        if pointer == len(instructions):
+            return acc, True
+        if pointer in visited:
+            return acc, False
+        visited.add(pointer)
+        try:
+            ins, val = tuple(instructions[pointer].split())
+        except IndexError:
+            return acc, False
+        if ins == 'nop':
+            prev_pointer = pointer
+            pointer+=1
+        if ins == 'acc':
+            prev_pointer = pointer
+            acc+=int(val)
+            pointer+=1
+        if ins == 'jmp':
+            prev_pointer = pointer
+            pointer+=int(val)
     
     
-
-print(f'A: {acc}')
+print(f'A: {run(entries)}')
 
 # Part B
-
-print(prev_pointer)
-ins, val = tuple(entries[prev_pointer].split())
-if ins == 'jmp':
-    entries[prev_pointer] = f'nop {val}'
-if ins == 'nop':
-    entries[prev_pointer] = f'jmp {val}'
-
-acc = 0
-visited = []
-pointer = 0
-prev_pointer = 0
-while(True):
-    if pointer in visited:
-        break
-    visited.append(pointer)
-    ins, val = tuple(entries[pointer].split())
+change_index = 0
+while(change_index <= len(entries)):
+    entries_copy = entries.copy()
+    ins, val = tuple(entries_copy[change_index].split())
     if ins == 'nop':
-        pointer+=1
-    if ins =='acc':
-        acc+=int(val)
-        pointer+=1
-    if ins == 'jmp':
-        pointer+=int(val)
+        entries_copy[change_index] = f'jmp {val}'
+    elif ins == 'jmp':
+        entries_copy[change_index] = f'nop {val}'
+    else:
+        change_index += 1
+        continue
 
-print(f'B: {acc}')
+    acc, done = run(entries_copy)
+    if done:
+        print(f'B: {acc, done}')
+        break
+    change_index += 1
+    
+    
+
+        
