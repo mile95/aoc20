@@ -1,15 +1,42 @@
+import re
+import collections
+
 with open("input.txt") as f:
     entries = f.read().splitlines()
 
-bags = {}
+first_regex = re.compile('^(\w+ \w+) bags contain (.+)$')
+second_regex = re.compile('(\d+) (\w+ \w+)')
+
+network = collections.defaultdict(list)
 for entry in entries:
-    bag = entry.split(' bags')[0] 
-    value =  entry.split(' bags')[1].split(' contain')[1].replace('bag','')
-    value_d = {}
-    for x in value.strip().split(', '):
-        if not x == 'no other':
-            value_d[x.split(' ', 1)[1].replace('.','').strip()] = int(x.split(' ')[0])
+    matches = first_regex.match(entry)
+    parent = matches[1]
+    for _, child in second_regex.findall(matches[2]):
+        network[child].append(parent)
 
-    bags[bag] = value_d
+def compute_A(color):
+    s = {color}
+    for parent in network[color]:
+        s |= compute_A(parent)
+    return s
 
-print(bags)
+# Part A
+print(len(compute_A('shiny gold')) - 1)
+
+# Part B
+network = {}
+for entry in entries:
+    matches = first_regex.match(entry)
+    parent = matches[1]
+    children = []
+    for d, child in second_regex.findall(matches[2]):
+        children.append((int(d), child))
+    network[parent] = children
+
+def compute_B(n, color):
+    count = n
+    for child_n, child in network[color]:
+        count += compute_B(n*child_n, child)
+    return count
+
+print(compute_B(1, 'shiny gold') - 1)
